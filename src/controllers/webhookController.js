@@ -16,11 +16,11 @@ export const handleWebhook = async (req, res) => {
     const authorName = authorAttributes?.['Value Author Attributes Name'];
 
     if (eventData.Event === 'sent' && (!authorAttributes || !authorName)) {
-      // Adiciona o processamento do evento à fila
       queue.add(() => processEvent(eventData));
       console.log(`Evento enfileirado do contato: ${eventData.value.metadata['Value Metadata Deprecated Contact Id']}`);
       return res.status(200).json({ success: true, message: 'Evento enfileirado com sucesso' });
     } else {
+      console.log(`Evento do contact_id não processado: ${eventData.value.metadata['Value Metadata Deprecated Contact Id']}`);
       return res.status(200).json({ success: false, message: 'Evento não processado' });
     }
   } catch (error) {
@@ -39,7 +39,7 @@ const processEvent = async (eventData) => {
       console.log(`Tentativa ${attempts + 1} de processar o evento: ${eventData.value.metadata['Value Metadata Deprecated Contact Id']}`);
       const response = await processData(eventData);
       console.log('Dados enviados com sucesso:', response.data);
-      return;
+      return; // Sai do loop ao processar com sucesso
     } catch (error) {
       attempts++;
       console.error(`Erro ao processar o evento: ${error.message}`);
