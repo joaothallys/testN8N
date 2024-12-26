@@ -1,19 +1,17 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-require('dotenv').config();
+import express from 'express';
+import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+import routes from './routes.js';
 
-const routes = require('./routes');
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware para processar JSON
 app.use(bodyParser.json());
 
-// Rotas
 app.use('/webhooks', routes);
 
-// Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });

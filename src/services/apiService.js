@@ -1,12 +1,10 @@
-const axios = require('axios');
+import axios from 'axios';
 
-const processData = async (data) => {
+export const processData = async (data) => {
   try {
-    // Enviar o JSON completo recebido para outra API
     const response = await axios.post(process.env.API_URL, data, {
       headers: {
         'Content-Type': 'application/json',
-        //'Authorization': `Bearer ${process.env.API_TOKEN}`,
       },
     });
 
@@ -17,5 +15,3 @@ const processData = async (data) => {
     throw error;
   }
 };
-
-module.exports = { processData };
