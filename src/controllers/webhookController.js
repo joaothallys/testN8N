@@ -5,22 +5,22 @@ const queue = new PQueue({ concurrency: 1 });
 
 export const handleWebhook = async (req, res) => {
   try {
-    const eventData = req.body.message;
-    if (!eventData || !eventData.Event) {
+    console.log('Corpo da solicitação:', JSON.stringify(req.body, null, 2)); // Adiciona log do corpo da solicitação
+    const eventData = req.body;
+    if (!eventData || !eventData.event) {
       return res.status(400).json({ error: 'Evento ou dados ausentes' });
     }
 
     // Verifica se o evento deve ser processado
-    const author = eventData.value?.['Value Template']?.author;
-    const authorAttributes = author?.attributes;
-    const authorName = authorAttributes?.['Value Author Attributes Name'];
+    const author = eventData.value?.author;
+    const authorUuid = author?.uuid;
 
-    if (eventData.Event === 'sent' && (!authorAttributes || !authorName)) {
+    if (eventData.event === 'sent' && !authorUuid) {
       queue.add(() => processEvent(eventData));
-      console.log(`Evento enfileirado do contato: ${eventData.value.metadata['Value Metadata Deprecated Contact Id']}`);
+      console.log(`Evento enfileirado do contato: ${eventData.value.metadata['deprecated_contact_id']}`);
       return res.status(200).json({ success: true, message: 'Evento enfileirado com sucesso' });
     } else {
-      console.log(`Evento do contact_id não processado: ${eventData.value.metadata['Value Metadata Deprecated Contact Id']}`);
+      console.log(`Evento do contact_id não processado: ${eventData.value.metadata['deprecated_contact_id']}`);
       return res.status(200).json({ success: false, message: 'Evento não processado' });
     }
   } catch (error) {
@@ -36,7 +36,8 @@ const processEvent = async (eventData) => {
 
   while (attempts < maxAttempts) {
     try {
-      console.log(`Tentativa ${attempts + 1} de processar o evento: ${eventData.value.metadata['Value Metadata Deprecated Contact Id']}`);
+      console.log(`Tentativa ${attempts + 1} de processar o evento: ${eventData.value.metadata['deprecated_contact_id']}`);
+      console.log('Dados sendo enviados para a API:', JSON.stringify(eventData, null, 2)); // Adiciona log dos dados sendo enviados para a API
       const response = await processData(eventData);
       console.log('Dados enviados com sucesso:', response.data);
       return; // Sai do loop ao processar com sucesso
@@ -48,7 +49,7 @@ const processEvent = async (eventData) => {
         console.log(`Aguardando 30 segundos antes de tentar novamente...`);
         await new Promise(resolve => setTimeout(resolve, 30000));
       } else {
-        console.error(`Falha após ${maxAttempts} tentativas. Evento: ${eventData.Event}`);
+        console.error(`Falha após ${maxAttempts} tentativas. Evento: ${eventData.event}`);
         throw new Error(`Evento falhou após ${maxAttempts} tentativas`);
       }
     }
