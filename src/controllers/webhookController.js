@@ -7,7 +7,7 @@ export const handleWebhook = async (req, res) => {
   try {
     console.log('Corpo da solicitação:', JSON.stringify(req.body, null, 2)); // Adiciona log do corpo da solicitação
     const eventData = req.body;
-    if (!eventData || !eventData.event) {
+    if (!eventData || eventData.event) {
       return res.status(400).json({ error: 'Evento ou dados ausentes' });
     }
 
